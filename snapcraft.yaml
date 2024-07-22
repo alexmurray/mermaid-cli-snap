@@ -22,7 +22,7 @@ parts:
     source: https://github.com/mermaid-js/mermaid-cli.git
     source-tag: $SNAPCRAFT_PROJECT_VERSION
     build-environment:
-      - NODEJS_VERSION: "v20.15.0"
+      - NODEJS_VERSION: "v20.15.1"
     npm-node-version: $NODEJS_VERSION
     stage-snaps:
       - chromium
