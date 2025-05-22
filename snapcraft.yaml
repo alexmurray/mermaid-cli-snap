@@ -1,5 +1,5 @@
 name: mermaid-cli
-version: 10.4.0
+version: 11.4.2
 summary: Command line tool for the Mermaid library
 description: |
   This is a command-line interface (CLI) for
@@ -8,24 +8,34 @@ description: |
 
 grade: stable
 confinement: strict
-base: core20
+# use the same base as the chromium snap which we stage
+base: core22
 
 apps:
   mmdc:
-    command: bin/node $SNAP/bin/mmdc
+    command: bin/node $SNAP/bin/mmdc --puppeteerConfigFile $SNAP/puppeteer-config.json
     plugs:
       - home
+      # bare-minimum of plugs to run chromium found via trial-and-error
+      - network-bind
+      - opengl
+
+environment:
+  PUPPETEER_EXECUTABLE_PATH: $SNAP/bin/chromium.launcher
 
 parts:
   mermaid-cli:
-    plugin: npm
+    # since we don't really use the npm plugin directly as we don't use it for
+    # the build and we install nodejs manually, this can likely just be the nil
+    # plugin
+    plugin: nil
     source: https://github.com/mermaid-js/mermaid-cli.git
     source-tag: $SNAPCRAFT_PROJECT_VERSION
     build-environment:
-      - NODEJS_VERSION: "v22.13.0"
-    npm-node-version: $NODEJS_VERSION
-    stage-snaps:
-      - chromium
+      - NODEJS_VERSION: "v22.14.0"
+      - PATH: $SNAPCRAFT_PART_INSTALL/bin:$PATH
+      - PUPPETEER_SKIP_DOWNLOAD: 1
+      - PUPPETEER_EXECUTABLE_PATH: /snap/chromium/current/bin/chromium.launcher
     override-build: |
       # install the official nodejs so we get the expected npm version
       if [ $SNAP_ARCH == "amd64" ]; then
@@ -38,7 +48,37 @@ parts:
         ARCH=$SNAP_ARCH
       fi
       curl -s https://nodejs.org/dist/"${NODEJS_VERSION}"/node-"${NODEJS_VERSION}"-linux-$ARCH.tar.gz | tar xzf - -C "$SNAPCRAFT_PART_INSTALL" --strip-components=1
+      unset NODE_ENV
       npm install
       npm run prepare
       cp -r dist $SNAPCRAFT_PART_INSTALL
-      npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" $(npm pack . | tail -1)
+      npm install -g --prefix "${SNAPCRAFT_PART_INSTALL}" --install-links "${SNAPCRAFT_PART_BUILD}" # $(npm pack . | tail -1)
+    stage-snaps:
+      - chromium
+    stage-packages:
+      # dependencies required by chromium
+      - libasound2
+      - libatk-bridge2.0-0
+      - libatk1.0-0
+      - libatspi2.0-0
+      - libcairo2
+      - libcups2
+      - libdrm2
+      - libgbm1
+      - libnss3
+      - libpango-1.0-0
+      - libx11-6
+      - libxau6
+      - libxcb1
+      - libxcomposite1
+      - libxdamage1
+      - libxdmcp6
+      - libxext6
+      - libxfixes3
+      - libxkbcommon-x11-0
+      - libxrandr2
+
+  config:
+    plugin: dump
+    source-type: file
+    source: puppeteer-config.json
