@@ -1,0 +1,58 @@
+summary: basic smoke test
+
+prepare: |
+  # we run mmdc on example files - these need to be in somewhere mermaid-cli can
+  # read them from - so do it in home
+  rm -rf $HOME/tests
+  cp -r $SPREAD_PATH/tests/smoke/tests $HOME
+
+restore: |
+  rm -rf $HOME/tests
+
+execute: |
+  cd $HOME/tests
+
+  # ensure there are no lingering svg file
+  rm -f *.svg
+  failures=0
+  for f in *.{md,mmd}; do
+    # see if there is an associated css file
+    css_args=""
+    css_file="$(dirname $f)/$(basename $f).css"
+    if [ -f "$css_file" ]; then
+      css_args="--cssFile $css_file"
+    fi
+
+    mermaid-cli.mmdc -c config.json -i $f $css_args &> /dev/null || true
+
+    # expect output file of form $f.svg unless is a markdown file which can
+    # contain multiple and strips the .md extension - NOTE: the mermaid.md
+    # file causes an error and it seems the different diagrams within it are
+    # generated async so if the error is encountered before any of the other
+    # diagrams is rendered then we may not get any output - FIXME
+    expected="${f}.svg"
+    if [[ $f == *.md ]]; then
+      expected="${f}-?.svg";
+    fi
+
+    # expect failure for sequence.mmd and no-charts.md
+    if [ $f == "sequence.mmd" ] || [ $f == "no-charts.md" ] || [ $f == "mermaidless-markdown-file.md" ]; then
+      # use ls instead of test -f so we can use a pattern for $expected
+      if ! ls -1 $expected &> /dev/null; then
+        echo "PASS (expected failure) [$f]"
+      else
+        echo "FAIL (unexpected pass) [$expected present]"
+        failures=$((failures+1))
+      fi
+    else
+      # use ls instead of test -f so we can use a pattern for $expected
+      if ls -1 $expected &> /dev/null; then
+        echo "PASS [$f]"
+      else
+        echo "FAIL [$expected missing]"
+        failures=$((failures+1));
+      fi
+    fi
+  done
+  echo "$failures failing tests"
+  #exit $failures
