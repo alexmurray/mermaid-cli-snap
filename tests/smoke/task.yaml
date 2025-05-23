@@ -23,7 +23,7 @@ execute: |
       css_args="--cssFile $css_file"
     fi
 
-    mermaid-cli.mmdc -c config.json -i $f $css_args &> /dev/null || true
+    mermaid-cli.mmdc -c config.json -i $f $css_args || true
 
     # expect output file of form $f.svg unless is a markdown file which can
     # contain multiple and strips the .md extension - NOTE: the mermaid.md
