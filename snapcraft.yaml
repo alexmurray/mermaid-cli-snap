@@ -12,6 +12,7 @@ confinement: strict
 base: core22
 compression: lzo
 icon: icon.png
+license: MIT
 # chromium is only available on the following architectures
 architectures:
   - amd64
