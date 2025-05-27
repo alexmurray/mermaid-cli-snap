@@ -38,6 +38,8 @@ parts:
       - PATH: $SNAPCRAFT_PART_INSTALL/bin:$PATH
       - PUPPETEER_SKIP_DOWNLOAD: 1
       - PUPPETEER_EXECUTABLE_PATH: /snap/chromium/current/bin/chromium.launcher
+    build-packages:
+      - curl
     override-build: |
       # install the official nodejs so we get the expected npm version
       if [ $SNAP_ARCH == "amd64" ]; then
@@ -79,6 +81,13 @@ parts:
       - libxfixes3
       - libxkbcommon-x11-0
       - libxrandr2
+    override-prime: |
+      craftctl default
+      # cleanup some bits from the chromium snap - remove symlinks which point
+      # outside the snap and remove the setuid permission from the
+      # chrome-sandbox
+      rm $SNAPCRAFT_PRIME/usr/bin/xdg-email
+      chmod -s $SNAPCRAFT_PRIME/usr/lib/chromium-browser/chrome-sandbox
 
   config:
     plugin: dump
