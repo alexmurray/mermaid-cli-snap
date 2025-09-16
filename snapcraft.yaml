@@ -1,5 +1,5 @@
 name: mermaid-cli
-version: 11.6.0
+version: 11.10.1
 summary: Command line tool for the Mermaid library
 description: |
   This is a command-line interface (CLI) for
@@ -23,10 +23,16 @@ apps:
   mmdc:
     command: bin/node $SNAP/bin/mmdc --puppeteerConfigFile $SNAP/puppeteer-config.json
     plugs:
+      # cribbed from https://github.com/canonical/ght/blob/d557c458b2a432642fd3dd25208fcb694d156887/snap/snapcraft.yaml#L79
+      - desktop
+      - desktop-legacy
       - home
-      # bare-minimum of plugs to run chromium found via trial-and-error
+      - mount-observe
+      - network
       - network-bind
       - opengl
+      - unity7
+      - x11
 
 environment:
   PUPPETEER_EXECUTABLE_PATH: $SNAP/bin/chromium.launcher
