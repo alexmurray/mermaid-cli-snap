@@ -17,7 +17,6 @@ license: MIT
 platforms:
   amd64:
   arm64:
-  armhf:
 
 apps:
   mmdc:
