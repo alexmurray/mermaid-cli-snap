@@ -9,15 +9,15 @@ description: |
 grade: stable
 confinement: strict
 # use the same base as the chromium snap which we stage
-base: core22
+base: core24
 compression: lzo
 icon: icon.png
 license: MIT
 # chromium is only available on the following architectures
-architectures:
-  - amd64
-  - arm64
-  - armhf
+platforms:
+  amd64:
+  arm64:
+  armhf:
 
 apps:
   mmdc:
@@ -33,6 +33,8 @@ apps:
       - opengl
       - unity7
       - x11
+      # also need some plugs for chromium itself
+      - password-manager-service
 
 environment:
   PUPPETEER_EXECUTABLE_PATH: $SNAP/bin/chromium.launcher
@@ -72,8 +74,7 @@ parts:
     stage-snaps:
       - chromium
     stage-packages:
-      # dependencies required by chromium
-      - libasound2
+      - libasound2t64
       - libatk-bridge2.0-0
       - libatk1.0-0
       - libatspi2.0-0
