@@ -13,7 +13,6 @@ path: /spread/mermaid-cli-snap
 exclude:
   - .git
   - .github
-  - mermaid-cli*.snap
 
 environment:
   SNAP: mermaid-cli
@@ -21,6 +20,7 @@ environment:
   CHANNEL/latest_candidate: latest/candidate
   CHANNEL/latest_beta: latest/beta
   CHANNEL/latest_edge: latest/edge
+  CHANNEL/local: local
 
 suites:
   tests/:
@@ -36,7 +36,11 @@ suites:
       apt install -y snapd git
 
     prepare-each: |
-      snap install $SNAP --channel $CHANNEL
+      if [ $CHANNEL == local ]; then
+        snap install --classic --dangerous $SPREAD_PATH/${SNAP}_*.snap
+      else
+        snap install --classic --channel $CHANNEL ${SNAP}
+      fi
 
     restore-each: |
       snap remove $SNAP
